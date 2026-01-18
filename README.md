@@ -39,3 +39,11 @@ The retrieval pipeline follows these steps:
 
 ## Repository layout
 
+```
+app/ query orchestration and example run
+ingest/ PDF parsing and chunking
+retrieval/ dense, sparse, and hybrid retrieval logic
+evaluation/ simple retrieval metrics
+data/sample_docs/ place PDF documents here
+
+```
