@@ -1,32 +1,41 @@
-# Industrial RAG System (Engineering Docs)
+# Engineering Docs RAG (Hybrid Retrieval)
 
-Hybrid retrieval system for engineering documents using dense embeddings (FAISS) and sparse keyword search (BM25).
+This project is a small, production-style retrieval system for technical engineering documents. It combines semantic search (dense embeddings with FAISS) and keyword search (BM25) to surface relevant sections from PDFs that are difficult to search with keywords alone.
 
-## System overview
-This project ingests PDF engineering documents, chunks them into overlapping text windows, and builds two retrieval indexes:
-- Dense embeddings with sentence-transformers + FAISS
-- Sparse keyword search with BM25
+The goal is to demonstrate how hybrid retrieval works in real engineering documentation, where terminology, symbols, and phrasing do not always map cleanly to pure semantic search.
 
-Queries are executed against both indexes, then blended into a single ranked list.
+## What this does
 
-## Architecture
-1. **Ingestion** (`ingest/parse_docs.py`): Read PDFs from `data/sample_docs/` and extract text page-by-page.
-2. **Chunking** (`ingest/chunk_text.py`): Split each page into overlapping chunks (default 500 tokens, 100 overlap).
-3. **Dense retrieval** (`retrieval/dense_search.py`): Embed chunks with `all-MiniLM-L6-v2`, index with FAISS.
-4. **Sparse retrieval** (`retrieval/bm25.py`): Tokenize and rank with BM25.
-5. **Hybrid ranking** (`retrieval/hybrid_ranker.py`): Normalize scores and combine them with configurable alpha.
-6. **Query engine** (`app/query_engine.py`): Orchestrates indexing and retrieval.
+At a high level, the system:
 
-## How to run locally
-1. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. Place PDF files in `data/sample_docs/`.
-3. Run the query engine:
-   ```bash
-   python app/query_engine.py
-   ```
+- Ingests PDF engineering documents
+- Breaks text into overlapping chunks
+- Indexes those chunks using both dense and sparse retrieval
+- Blends results from both approaches into a single ranked list
 
-## Status
-In progress.
+The code is intentionally kept simple and local-only, with no external services or orchestration frameworks, so the full pipeline is easy to inspect and reason about.
+
+## How it is structured
+
+The retrieval pipeline follows these steps:
+
+1. **Document ingestion** (`ingest/parse_docs.py`)  
+   Reads PDFs from `data/sample_docs/` and extracts text page by page.
+
+2. **Chunking** (`ingest/chunk_text.py`)  
+   Splits text into overlapping chunks (default: 500 tokens with 100-token overlap) to balance context size and retrieval precision.
+
+3. **Dense retrieval** (`retrieval/dense_search.py`)  
+   Embeds chunks using the `all-MiniLM-L6-v2` sentence-transformer and indexes them with FAISS for semantic similarity search.
+
+4. **Sparse retrieval** (`retrieval/bm25.py`)  
+   Builds a BM25 index over the same chunks to capture exact keyword matches and technical terminology.
+
+5. **Hybrid ranking** (`retrieval/hybrid_ranker.py`)  
+   Normalizes and combines dense and sparse scores using a configurable weighting factor.
+
+6. **Query engine** (`app/query_engine.py`)  
+   Orchestrates indexing and retrieval, then runs a simple example query end-to-end.
+
+## Repository layout
+
