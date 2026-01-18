@@ -60,4 +60,5 @@ def hybrid_rank(
         }
 
     ranked = sorted(combined.values(), key=lambda item: item["score"], reverse=True)
-    return ranked[:top_k]
+    filtered = [item for item in ranked if item["score"] >= 0.2]
+    return filtered[:top_k]
