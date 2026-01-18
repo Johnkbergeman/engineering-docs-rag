@@ -4,3 +4,4 @@ rank-bm25
 numpy
 scikit-learn
 pypdf
+tqdm

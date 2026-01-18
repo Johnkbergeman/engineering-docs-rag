@@ -17,12 +17,18 @@ from retrieval.hybrid_ranker import hybrid_rank
 
 
 def build_indexes(data_dir: Path) -> Dict[str, object]:
+    print("Loading documents...")
     records = load_pdf_pages(data_dir)
+    print(f"Loaded {len(records)} pages")
+    print("Chunking documents...")
     chunks = chunk_text_records(records)
+    print(f"Created {len(chunks)} chunks")
 
+    print("Building dense embeddings (this may take a minute)...")
     dense = DenseIndexer()
     dense.build_index(chunks)
 
+    print("Building BM25 index...")
     sparse = BM25Searcher()
     sparse.build_index(chunks)
 
@@ -55,6 +61,7 @@ def main() -> None:
         return
 
     query = "safety protocol for pressure valve installation"
+    print("Running query...")
     results = run_query(query, indexes["dense"], indexes["sparse"], top_k=5, alpha=0.6)
 
     print(f"Query: {query}")

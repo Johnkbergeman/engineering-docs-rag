@@ -6,6 +6,7 @@ from typing import Dict, Iterable, List
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from tqdm import tqdm
 
 
 def _l2_to_similarity(distances: np.ndarray) -> np.ndarray:
@@ -19,9 +20,24 @@ class DenseIndexer:
         self.index: faiss.IndexFlatL2 | None = None
         self.metadata: List[Dict[str, str]] = []
 
-    def embed_texts(self, texts: Iterable[str]) -> np.ndarray:
-        vectors = self.model.encode(list(texts), show_progress_bar=False)
-        return np.asarray(vectors, dtype="float32")
+    def embed_texts(self, texts: Iterable[str], batch_size: int = 32) -> np.ndarray:
+        text_list = list(texts)
+        if not text_list:
+            return np.empty((0, 0), dtype="float32")
+
+        embeddings: List[np.ndarray] = []
+        total = len(text_list)
+        for start in tqdm(
+            range(0, total, batch_size),
+            desc="Embedding chunks",
+            unit="batch",
+        ):
+            end = min(start + batch_size, total)
+            batch = text_list[start:end]
+            batch_vecs = self.model.encode(batch, show_progress_bar=False)
+            embeddings.append(np.asarray(batch_vecs, dtype="float32"))
+
+        return np.vstack(embeddings)
 
     def build_index(self, chunks: Iterable[Dict[str, str]]) -> None:
         self.metadata = []

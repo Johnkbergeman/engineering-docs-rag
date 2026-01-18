@@ -17,18 +17,27 @@ def load_pdf_pages(data_dir: str | Path) -> List[Dict[str, str]]:
         return []
 
     records: List[Dict[str, str]] = []
-    for pdf_path in sorted(data_path.glob("*.pdf")):
+    pdf_paths = sorted(data_path.glob("*.pdf"))
+    total_pages = 0
+    pages_with_text = 0
+    for pdf_path in pdf_paths:
         reader = PdfReader(str(pdf_path))
         stem = pdf_path.stem
         for page_num, page in enumerate(reader.pages, start=1):
             text = page.extract_text() or ""
             text = text.strip()
-            if not text:
-                continue
+            total_pages += 1
+            if text:
+                pages_with_text += 1
             records.append(
                 {
                     "doc_id": f"{stem}_p{page_num}",
                     "text": text,
                 }
             )
+    if pdf_paths:
+        print(
+            f"Detected {total_pages} pages across {len(pdf_paths)} PDFs "
+            f"({pages_with_text} pages with extractable text)."
+        )
     return records
