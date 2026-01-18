@@ -60,7 +60,7 @@ def main() -> None:
         print("No PDF pages found in data/sample_docs. Add PDFs and retry.")
         return
 
-    query = "safety protocol for pressure valve installation"
+    query = "Explain parallel flow versus counterflow heat exchangers"
     print("Running query...")
     results = run_query(query, indexes["dense"], indexes["sparse"], top_k=5, alpha=0.6)
 
